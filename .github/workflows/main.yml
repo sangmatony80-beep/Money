@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#121212"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Header -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="💸 Cash Stealer Pro"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="#FF5722"
+            android:gravity="center"
+            android:layout_marginBottom="30dp"/>
+
+        <!-- Input Fields -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="লক্ষ্যবস্তু নম্বর (Target)"
+            android:textColorHint="#888"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etTargetNumber"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="phone"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="টাকার পরিমাণ (Amount)"
+            android:textColorHint="#888"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_marginTop="15dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etAmount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="রিসিভার একাউন্ট (Your Account)"
+            android:textColorHint="#888"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_marginTop="15dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etReceiverAccount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Hack Button -->
+        <Button
+            android:id="@+id/btnHack"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="🚀 হ্যাক শুরু করুন (START)"
+            android:textSize="18sp"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#FF5722"
+            android:layout_marginTop="30dp"/>
+
+        <!-- Status Indicator -->
+        <LinearLayout
+            android:id="@+id/layoutStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#1E1E1E"
+            android:padding="15dp"
+            android:layout_marginTop="20dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tvStatusTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🟢 প্রস্তুত..."
+                android:textColor="#4CAF50"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="4dp"
+                android:layout_marginTop="10dp"
+                android:visibility="gone"/>
+        </LinearLayout>
+
+        <!-- History Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📜 লেনদেনের ইতিহাস:"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:layout_marginTop="20dp"/>
+
+        <ListView
+            android:id="@+id/lvHistory"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:background="#1E1E1E"
+            android:divider="#333333"
+            android:dividerHeight="1dp"/>
+
+    </LinearLayout>
+</ScrollView>
